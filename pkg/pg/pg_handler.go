@@ -1,4 +1,4 @@
-package handler
+package pg
 
 import (
 	"time"

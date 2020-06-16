@@ -28,14 +28,21 @@ func main() {
 		log.Fatalf("load config file failed: %s", err.Error())
 	}
 
-	conn, err := grpc.Dial(conf.PGAgent.Addr, grpc.WithInsecure())
+	agentConn, err := grpc.Dial(conf.PGAgent.Addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("conn pg agent failed: %s", err.Error())
 	}
 
-	defer conn.Close()
+	defer agentConn.Close()
 
-	if err := rpcserver.Run(conf, conn); err != nil {
+	ddiConn, err := grpc.Dial(conf.DDICtrl.Addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("conn pg agent failed: %s", err.Error())
+	}
+
+	defer ddiConn.Close()
+
+	if err := rpcserver.Run(conf, agentConn, ddiConn); err != nil {
 		log.Fatalf("new rpc server failed: %s", err.Error())
 	}
 

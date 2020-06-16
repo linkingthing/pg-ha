@@ -18,6 +18,7 @@ type PGHAConfig struct {
 	Server  ServerConf  `yaml:"server"`
 	DB      DBConf      `yaml:"db"`
 	PGAgent PGAgentConf `yaml:"pg_agent"`
+	DDICtrl DDICtrlConf `yaml:"ddi_ctrl"`
 }
 
 type ServerConf struct {
@@ -36,6 +37,10 @@ type DBConf struct {
 }
 
 type PGAgentConf struct {
+	Addr string `yaml:"addr"`
+}
+
+type DDICtrlConf struct {
 	Addr string `yaml:"addr"`
 }
 

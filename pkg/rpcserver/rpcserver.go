@@ -3,7 +3,6 @@ package rpcserver
 import (
 	"fmt"
 	"os/exec"
-	//"path"
 	"time"
 
 	"github.com/looplab/fsm"
@@ -12,7 +11,8 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/linkingthing/pg-ha/config"
-	"github.com/linkingthing/pg-ha/pkg/handler"
+	"github.com/linkingthing/pg-ha/pkg/ddi"
+	"github.com/linkingthing/pg-ha/pkg/pg"
 )
 
 type PGHACmd string
@@ -37,17 +37,19 @@ const (
 )
 
 type RPCServer struct {
-	pgHandler *handler.PGHandler
-	recentCmd PGHACmd
-	fsm       *fsm.FSM
-	eventChan chan string
-	fsmState  string
+	pgHandler  *pg.PGHandler
+	ddiHandler *ddi.DDIHandler
+	recentCmd  PGHACmd
+	fsm        *fsm.FSM
+	eventChan  chan string
+	fsmState   string
 }
 
-func Run(conf *config.PGHAConfig, conn *grpc.ClientConn) error {
+func Run(conf *config.PGHAConfig, agentConn *grpc.ClientConn, ddiConn *grpc.ClientConn) error {
 	s := &RPCServer{
-		pgHandler: handler.NewPGHandler(conf, conn),
-		eventChan: make(chan string, 10),
+		pgHandler:  pg.NewPGHandler(conf, agentConn),
+		ddiHandler: ddi.NewDDIHandler(conf.Server.MasterIP, ddiConn),
+		eventChan:  make(chan string, 10),
 	}
 
 	s.fsm = fsm.NewFSM(
@@ -145,7 +147,7 @@ func (s *RPCServer) queryDestState() []string {
 }
 
 func dbIsRunning(states []string) bool {
-	return states[0] == string(handler.DBStateRunning)
+	return states[0] == string(pg.DBStateRunning)
 }
 
 func isRoleMatched(states []string, role config.DBRole) bool {
@@ -309,6 +311,11 @@ func (s *RPCServer) turnToTmpMaster(e *fsm.Event) {
 		log.Errorf("start tmp master failed: %s", err.Error())
 		panic(err)
 	}
+
+	if err := s.ddiHandler.MasterDown(); err != nil {
+		log.Errorf("send master down to ddi failed: %s", err.Error())
+		panic(err)
+	}
 }
 
 func (s *RPCServer) turnBackToSlave(e *fsm.Event) {
@@ -340,6 +347,11 @@ func (s *RPCServer) turnBackToSlave(e *fsm.Event) {
 		log.Errorf("start slave failed: %s", err.Error())
 		return
 	}
+
+	if err := s.ddiHandler.MasterUp(); err != nil {
+		log.Errorf("send master up to ddi failed: %s", err.Error())
+		panic(err)
+	}
 }
 
 func (s *RPCServer) rollBackTo(state string) {
@@ -350,7 +362,7 @@ func (s *RPCServer) ShutDown(unusedArg string, noreturn *string) error {
 	return s.pgHandler.StopDB()
 }
 
-func (s *RPCServer) GetDBState(unusedArg string, state *handler.DBState) error {
+func (s *RPCServer) GetDBState(unusedArg string, state *pg.DBState) error {
 	*state = s.pgHandler.GetDBState()
 	return nil
 }
