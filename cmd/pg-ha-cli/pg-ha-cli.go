@@ -23,8 +23,8 @@ var (
 
 func init() {
 	flag.StringVar(&cmd, "c", "start_ha", "cmd: start_ha/master_down/master_up")
-	flag.StringVar(&master, "m", "", "kea_master config file dir")
-	flag.StringVar(&slave, "s", "", "kea_master listen adress")
+	flag.StringVar(&master, "m", "", "master node ip")
+	flag.StringVar(&slave, "s", "", "slave node ip")
 }
 
 func startHA() error {
