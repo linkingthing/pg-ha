@@ -14,18 +14,29 @@ type DDIHandler struct {
 }
 
 func NewDDIHandler(ip string, conn *grpc.ClientConn) *DDIHandler {
-	return &DDIHandler{
-		grpcClient: pb.NewDDICtrlManagerClient(conn),
-		masterIP:   ip,
+	h := &DDIHandler{
+		masterIP: ip,
 	}
+	if conn.Target() != "" {
+		h.grpcClient = pb.NewDDICtrlManagerClient(conn)
+	}
+	return h
 }
 
 func (h *DDIHandler) MasterUp() error {
-	_, err := h.grpcClient.MasterUp(context.TODO(), &pb.MasterUpRequest{MasterIp: h.masterIP})
-	return err
+	if h.grpcClient != nil {
+		_, err := h.grpcClient.MasterUp(context.TODO(), &pb.MasterUpRequest{MasterIp: h.masterIP})
+		return err
+	}
+
+	return nil
 }
 
 func (h *DDIHandler) MasterDown() error {
-	_, err := h.grpcClient.MasterDown(context.TODO(), &pb.MasterDownRequest{})
-	return err
+	if h.grpcClient != nil {
+		_, err := h.grpcClient.MasterDown(context.TODO(), &pb.MasterDownRequest{})
+		return err
+	}
+
+	return nil
 }
