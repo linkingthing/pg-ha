@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -20,14 +20,14 @@ import (
 )
 
 const (
-	RunPGContainer = "docker run -d --rm --name %s -e POSTGRES_PASSWORD=%s -e POSTGRES_USER=%s -e POSTGRES_DB=%s -p %d:%d -v %s:/var/lib/postgresql/data -v /etc/localtime:/etc/localtime postgres"
-	PGConnStr      = "user=%s password=%s host=localhost port=%d database=%s sslmode=disable pool_max_conns=10"
-	SyncCommand    = "rsync -ae \"ssh -o StrictHostKeyChecking=no\" --delete %s %s:%s"
+	PGConnStr   = "user=%s password=%s host=localhost port=%d database=%s sslmode=disable pool_max_conns=10"
+	SyncCommand = "rsync -ae \"ssh -o StrictHostKeyChecking=no\" --delete %s %s:%s"
+	DBDataDir   = "/var/lib/docker/volumes/"
 )
 
 type PGProxy struct {
 	grpcClient      pb.PGManagerClient
-	dbDataDir       string
+	dbVolumeName    string
 	dbName          string
 	dbUser          string
 	dbPass          string
@@ -44,7 +44,7 @@ func newPGProxy(conf *config.PGHAConfig, conn *grpc.ClientConn) *PGProxy {
 
 	return &PGProxy{
 		grpcClient:      pb.NewPGManagerClient(conn),
-		dbDataDir:       conf.DB.DataDir,
+		dbVolumeName:    conf.DB.VolumeName,
 		dbName:          conf.DB.Name,
 		dbUser:          conf.DB.User,
 		dbPass:          conf.DB.Password,
@@ -93,8 +93,14 @@ func (p *PGProxy) runDB() error {
 		log.Warnf("docker rm failed: %s", err.Error())
 	}
 
-	args := []string{"run", "-d", "--rm", "--name", p.dbContainerName, "-e", "POSTGRES_PASSWORD=lx", "-e", "POSTGRES_USER=lx", "-e", "POSTGRES_DB=lx",
-		"-p", "5432:5432", "-v", "/home/lx/data:/var/lib/postgresql/data", "-v", "/etc/localtime:/etc/localtime", "postgres"}
+	args := []string{"run", "-d", "--rm", "--name", p.dbContainerName,
+		"-e", fmt.Sprintf("POSTGRES_PASSWORD=%s", p.dbPass),
+		"-e", fmt.Sprintf("POSTGRES_USER=%s", p.dbUser),
+		"-e", fmt.Sprintf("POSTGRES_DB=%s", p.dbName),
+		"-p", fmt.Sprintf("%d:5432", p.dbPort),
+		"-v", fmt.Sprintf("%s:/var/lib/postgresql/data", p.dbVolumeName),
+		"-v", "/etc/localtime:/etc/localtime",
+		"postgres:12.2"}
 	if err := execCommand("docker", args...); err != nil {
 		log.Warnf("docker run failed: %s", err.Error())
 	}
@@ -130,8 +136,8 @@ func (p *PGProxy) syncData() error {
 		return err
 	}
 
-	if err := execCommand("bash", "-c",
-		fmt.Sprintf(SyncCommand, p.dbDataDir, p.anotherIP, p.dbDataDir[:strings.LastIndex(p.dbDataDir, "/")+1])); err != nil {
+	if err := execCommand("bash", "-c", fmt.Sprintf(SyncCommand, path.Join(DBDataDir, p.dbVolumeName, "_data"), p.anotherIP,
+		path.Join(DBDataDir, p.dbVolumeName))); err != nil {
 		if matched, _ := regexp.MatchString("exit status 24$", err.Error()); matched != true {
 			log.Errorf("exec sync command failed: %s", err.Error())
 			return err

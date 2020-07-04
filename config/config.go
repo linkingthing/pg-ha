@@ -28,12 +28,12 @@ type ServerConf struct {
 }
 
 type DBConf struct {
-	DataDir       string `yaml:"data_dir"`
 	ContainerName string `yaml:"container_name"`
 	Name          string `yaml:"name"`
 	User          string `yaml:"user"`
 	Password      string `yaml:"password"`
 	Port          uint32 `yaml:"port"`
+	VolumeName    string `yaml:"volume_name"`
 }
 
 type PGAgentConf struct {
