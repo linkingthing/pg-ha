@@ -91,6 +91,14 @@ github.com/linkingthing/pg-agent v0.0.0-20200614043124-cb6ef17b48cf h1:0L/lyoM11
 github.com/linkingthing/pg-agent v0.0.0-20200614043124-cb6ef17b48cf/go.mod h1:7vyHPwc+k1igKeml1iRsTlc0zENbddCyKGPJAghbv4U=
 github.com/linkingthing/pg-agent v0.0.0-20200614094159-4364f80b47f0 h1:NRMwToYkPCYkTqmtKv0IQlboo/R/dAp6vG8O3A80iS8=
 github.com/linkingthing/pg-agent v0.0.0-20200614094159-4364f80b47f0/go.mod h1:7vyHPwc+k1igKeml1iRsTlc0zENbddCyKGPJAghbv4U=
+github.com/linkingthing/pg-agent v0.0.0-20200614113457-95886ad3a8e7 h1:c0x+cpD3V3g48E5FP7qBPnDy9NME4gmfGBVkp28vLcc=
+github.com/linkingthing/pg-agent v0.0.0-20200614113457-95886ad3a8e7/go.mod h1:7vyHPwc+k1igKeml1iRsTlc0zENbddCyKGPJAghbv4U=
+github.com/linkingthing/pg-agent v0.0.0-20200703075151-5c708ebba760 h1:gmFpYESOnODZ0+/qTuQGR+IqgumtnGMMypNI/bJqZgs=
+github.com/linkingthing/pg-agent v0.0.0-20200703075151-5c708ebba760/go.mod h1:7vyHPwc+k1igKeml1iRsTlc0zENbddCyKGPJAghbv4U=
+github.com/linkingthing/pg-agent v0.0.0-20200707035107-c099657bbc17 h1:s9rnekxQa/uaTytArTx4Eho8JbN3vLvjMIzAQNrjqOo=
+github.com/linkingthing/pg-agent v0.0.0-20200707035107-c099657bbc17/go.mod h1:7vyHPwc+k1igKeml1iRsTlc0zENbddCyKGPJAghbv4U=
+github.com/linkingthing/pg-agent v0.0.0-20200707073748-492894b04f48 h1:JXNE02BpFHtSDMcJXcd79mZwtVDQDCBvo0WYW3cjmeA=
+github.com/linkingthing/pg-agent v0.0.0-20200707073748-492894b04f48/go.mod h1:7vyHPwc+k1igKeml1iRsTlc0zENbddCyKGPJAghbv4U=
 github.com/looplab/fsm v0.1.0 h1:Qte7Zdn/5hBNbXzP7yxVU4OIFHWXBovyTT2LaBTyC20=
 github.com/looplab/fsm v0.1.0/go.mod h1:m2VaOfDHxqXBBMgc26m6yUOwkFn8H2AlJDE+jd/uafI=
 github.com/mattn/go-colorable v0.1.1/go.mod h1:FuOcm+DKB9mbwrcAfNl7/TZVBZ6rcnceauSikq3lYCQ=

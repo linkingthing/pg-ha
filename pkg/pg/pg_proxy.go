@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
-	"regexp"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -20,9 +18,7 @@ import (
 )
 
 const (
-	PGConnStr   = "user=%s password=%s host=localhost port=%d database=%s sslmode=disable pool_max_conns=10"
-	SyncCommand = "rsync -ae \"ssh -o StrictHostKeyChecking=no\" --delete %s %s:%s"
-	DBDataDir   = "/var/lib/docker/volumes/"
+	PGConnStr = "user=%s password=%s host=localhost port=%d database=%s sslmode=disable pool_max_conns=10"
 )
 
 type PGProxy struct {
@@ -125,10 +121,20 @@ func (p *PGProxy) stopDB() error {
 }
 
 func (p *PGProxy) syncData() error {
-	db, err := pgxpool.Connect(context.Background(), fmt.Sprintf(PGConnStr, p.dbUser, p.dbPass, p.dbPort, p.dbName))
+	var db *pgxpool.Pool
+	var err error
+	for i := 1; i <= 60; i++ {
+		db, err = pgxpool.Connect(context.Background(), fmt.Sprintf(PGConnStr, p.dbUser, p.dbPass, p.dbPort, p.dbName))
+		if err != nil {
+			log.Infof("try to connect postges failed: %s and will retry %d", err.Error(), i)
+			time.Sleep(1 * time.Second)
+		} else {
+			break
+		}
+	}
+
 	if err != nil {
-		log.Errorf("connect postges failed: %s", err.Error())
-		return err
+		return fmt.Errorf("connect postges failed: %s", err.Error())
 	}
 
 	if _, err := db.Exec(context.Background(), "select pg_start_backup('replication', true)"); err != nil {
@@ -136,12 +142,9 @@ func (p *PGProxy) syncData() error {
 		return err
 	}
 
-	if err := execCommand("bash", "-c", fmt.Sprintf(SyncCommand, path.Join(DBDataDir, p.dbVolumeName, "_data"), p.anotherIP,
-		path.Join(DBDataDir, p.dbVolumeName))); err != nil {
-		if matched, _ := regexp.MatchString("exit status 24$", err.Error()); matched != true {
-			log.Errorf("exec sync command failed: %s", err.Error())
-			return err
-		}
+	if _, err = p.grpcClient.RsyncPostgresqlData(context.TODO(), &pb.RsyncPostgresqlDataRequest{Address: p.anotherIP}); err != nil {
+		log.Errorf("exec sync command failed: %s", err.Error())
+		return err
 	}
 
 	_, err = db.Exec(context.Background(), "select pg_stop_backup()")
