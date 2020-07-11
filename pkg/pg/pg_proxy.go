@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	PGConnStr = "user=%s password=%s host=localhost port=%d database=%s sslmode=disable pool_max_conns=10"
+	PGConnStr  = "user=%s password=%s host=localhost port=%d database=%s sslmode=disable pool_max_conns=10"
+	RetryCount = 60
 )
 
 type PGProxy struct {
@@ -123,7 +124,7 @@ func (p *PGProxy) stopDB() error {
 func (p *PGProxy) syncData() error {
 	var db *pgxpool.Pool
 	var err error
-	for i := 1; i <= 60; i++ {
+	for i := 1; i <= RetryCount; i++ {
 		db, err = pgxpool.Connect(context.Background(), fmt.Sprintf(PGConnStr, p.dbUser, p.dbPass, p.dbPort, p.dbName))
 		if err != nil {
 			log.Infof("try to connect postges failed: %s and will retry %d", err.Error(), i)

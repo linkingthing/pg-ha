@@ -1,6 +1,7 @@
 package pg
 
 import (
+	"fmt"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -93,17 +94,25 @@ func (h *PGHandler) StartSlave(directly bool) error {
 	}
 
 	if !directly {
+		retryCount := 0
 		for {
 			masterDBState, err := h.getMasterDBState()
 			if err != nil {
-				return err
+				retryCount += 1
+				log.Infof("get master state failed: %v and retry %d", err.Error(), retryCount)
+			} else {
+				retryCount = 0
+				if masterDBState == DBStateRunning {
+					break
+				} else {
+					log.Infof("waiting for master to run, now its state is %v", masterDBState)
+				}
 			}
 
-			if masterDBState == DBStateRunning {
-				break
-			} else {
-				log.Infof("waiting for master to run, now its state is %v", masterDBState)
+			if retryCount == RetryCount {
+				return fmt.Errorf("get master state timeout")
 			}
+
 			time.Sleep(time.Second)
 		}
 	}
