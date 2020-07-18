@@ -18,8 +18,9 @@ import (
 )
 
 const (
-	PGConnStr  = "user=%s password=%s host=localhost port=%d database=%s sslmode=disable pool_max_conns=10"
-	RetryCount = 60
+	PGConnStr    = "user=%s password=%s host=localhost port=%d database=%s sslmode=disable pool_max_conns=10"
+	RetryCount   = 60
+	pgInsidePort = 5432
 )
 
 type PGProxy struct {
@@ -60,7 +61,7 @@ func (p *PGProxy) genPGConfigFile(isMaster bool, isSlave bool) error {
 		Host:     p.anotherIP,
 		User:     p.dbUser,
 		Password: p.dbPass,
-		Port:     p.dbPort,
+		Port:     pgInsidePort,
 		IsMaster: isMaster,
 		IsSlave:  isSlave,
 	})
