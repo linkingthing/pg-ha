@@ -18,9 +18,8 @@ import (
 )
 
 const (
-	PGConnStr    = "user=%s password=%s host=localhost port=%d database=%s sslmode=disable pool_max_conns=10"
-	RetryCount   = 60
-	pgInsidePort = 5432
+	PGConnStr  = "user=%s password=%s host=localhost port=%d database=%s sslmode=disable pool_max_conns=10"
+	RetryCount = 60
 )
 
 type PGProxy struct {
@@ -61,7 +60,7 @@ func (p *PGProxy) genPGConfigFile(isMaster bool, isSlave bool) error {
 		Host:     p.anotherIP,
 		User:     p.dbUser,
 		Password: p.dbPass,
-		Port:     pgInsidePort,
+		Port:     p.dbPort,
 		IsMaster: isMaster,
 		IsSlave:  isSlave,
 	})
@@ -95,7 +94,7 @@ func (p *PGProxy) runDB() error {
 		"-e", fmt.Sprintf("POSTGRES_PASSWORD=%s", p.dbPass),
 		"-e", fmt.Sprintf("POSTGRES_USER=%s", p.dbUser),
 		"-e", fmt.Sprintf("POSTGRES_DB=%s", p.dbName),
-		"-p", fmt.Sprintf("%d:5432", p.dbPort),
+		"-p", fmt.Sprintf("%d:%d", p.dbPort, p.dbPort),
 		"-v", fmt.Sprintf("%s:/var/lib/postgresql/data", p.dbVolumeName),
 		"-v", "/etc/localtime:/etc/localtime",
 		"postgres:12.2"}
