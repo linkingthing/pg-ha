@@ -94,7 +94,7 @@ func (p *PGProxy) runDB() error {
 		"-e", fmt.Sprintf("POSTGRES_PASSWORD=%s", p.dbPass),
 		"-e", fmt.Sprintf("POSTGRES_USER=%s", p.dbUser),
 		"-e", fmt.Sprintf("POSTGRES_DB=%s", p.dbName),
-		"-p", fmt.Sprintf("%d:5432", p.dbPort),
+		"-p", fmt.Sprintf("%d:%d", p.dbPort, p.dbPort),
 		"-v", fmt.Sprintf("%s:/var/lib/postgresql/data", p.dbVolumeName),
 		"-v", "/etc/localtime:/etc/localtime",
 		"postgres:12.2"}
