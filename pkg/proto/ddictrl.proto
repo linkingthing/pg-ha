@@ -3,16 +3,15 @@ syntax = "proto3";
 package proto;
 
 service DDICtrlManager {
-    rpc MasterUp(MasterUpRequest) returns (DDICtrlResponse) {}
-    rpc MasterDown(MasterDownRequest) returns (DDICtrlResponse) {}
+    rpc MasterUp(DDICtrlRequest) returns (DDICtrlResponse) {}
+    rpc MasterDown(DDICtrlRequest) returns (DDICtrlResponse) {}
 }
 
 message DDICtrlResponse {
     bool succeed = 1;
 }
 
-message MasterUpRequest {
+message DDICtrlRequest {
     string master_ip = 1;
+    string slave_ip = 2;
 }
-
-message MasterDownRequest{}
