@@ -196,11 +196,6 @@ func (s *RPCServer) queryState(states *[]string) error {
 
 func (s *RPCServer) event(cmd PGHACmd) error {
 	log.Infof(fmt.Sprintf("get cmd = %s", cmd))
-	if cmd == s.recentCmd {
-		log.Infof(fmt.Sprintf("get cmd = %s is the same with recent cmd = %s, and ignore", cmd, s.recentCmd))
-		return nil
-	}
-
 	e, err := s.pharseCmdToEvent(cmd)
 	if err != nil {
 		return err
