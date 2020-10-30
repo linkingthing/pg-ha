@@ -35,14 +35,21 @@ func main() {
 
 	defer agentConn.Close()
 
-	ddiConn, err := grpc.Dial(conf.DDICtrl.Addr, grpc.WithInsecure())
+	ddiMasterConn, err := grpc.Dial(conf.DDICtrl.MasterAddr, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("conn pg agent failed: %s", err.Error())
+		log.Fatalf("conn controller_master failed: %s", err.Error())
+	}
+	ddiSlaveConn, err := grpc.Dial(conf.DDICtrl.SlaveAddr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("conn controller_salve failed: %s", err.Error())
 	}
 
-	defer ddiConn.Close()
+	defer func() {
+		ddiMasterConn.Close()
+		ddiSlaveConn.Close()
+	}()
 
-	if err := rpcserver.Run(conf, agentConn, ddiConn); err != nil {
+	if err := rpcserver.Run(conf, agentConn, ddiMasterConn, ddiSlaveConn); err != nil {
 		log.Fatalf("new rpc server failed: %s", err.Error())
 	}
 

@@ -64,8 +64,10 @@ func masterUp() error {
 	}
 
 	_, err := rpc.RpcClient(master+RpcPort, RpcTimeout)
-	if err != nil {
-		return fmt.Errorf("connect to master failed: %s", err.Error())
+	for err != nil {
+		fmt.Printf("connect to master failed: %s\n", err.Error())
+		time.Sleep(time.Second * 3)
+		_, err = rpc.RpcClient(master+RpcPort, RpcTimeout)
 	}
 
 	slaveCli, err := rpc.RpcClient(slave+RpcPort, RpcTimeout)
