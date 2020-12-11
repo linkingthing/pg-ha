@@ -45,10 +45,10 @@ type RPCServer struct {
 	fsmState   string
 }
 
-func Run(conf *config.PGHAConfig, agentConn *grpc.ClientConn, ddiMasterConn *grpc.ClientConn, ddiSlaveConn *grpc.ClientConn) error {
+func Run(conf *config.PGHAConfig, agentConn *grpc.ClientConn, ddiConn *grpc.ClientConn) error {
 	s := &RPCServer{
 		pgHandler:  pg.NewPGHandler(conf, agentConn),
-		ddiHandler: ddi.NewDDIHandler(conf, ddiMasterConn, ddiSlaveConn),
+		ddiHandler: ddi.NewDDIHandler(conf, ddiConn),
 		eventChan:  make(chan string, 10),
 	}
 

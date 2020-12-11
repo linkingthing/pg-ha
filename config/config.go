@@ -41,8 +41,7 @@ type PGAgentConf struct {
 }
 
 type DDICtrlConf struct {
-	MasterAddr string `yaml:"master_addr"`
-	SlaveAddr  string `yaml:"slave_addr"`
+	Addr string `yaml:"addr"`
 }
 
 var gConf *PGHAConfig
