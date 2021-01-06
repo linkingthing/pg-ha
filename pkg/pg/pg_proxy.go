@@ -97,7 +97,7 @@ func (p *PGProxy) runDB() error {
 		"-p", fmt.Sprintf("%d:%d", p.dbPort, p.dbPort),
 		"-v", fmt.Sprintf("%s:/var/lib/postgresql/data", p.dbVolumeName),
 		"-v", "/etc/localtime:/etc/localtime",
-		"postgres:12.2"}
+		"linkingthing/postgres:12.2"}
 	if err := execCommand("docker", args...); err != nil {
 		log.Warnf("docker run failed: %s", err.Error())
 	}

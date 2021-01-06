@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/linkingthing/pg-ha/config"
-	"github.com/linkingthing/pg-ha/pkg/ddi"
 	"github.com/linkingthing/pg-ha/pkg/pg"
 )
 
@@ -37,19 +36,17 @@ const (
 )
 
 type RPCServer struct {
-	pgHandler  *pg.PGHandler
-	ddiHandler *ddi.DDIHandler
-	recentCmd  PGHACmd
-	fsm        *fsm.FSM
-	eventChan  chan string
-	fsmState   string
+	pgHandler *pg.PGHandler
+	recentCmd PGHACmd
+	fsm       *fsm.FSM
+	eventChan chan string
+	fsmState  string
 }
 
-func Run(conf *config.PGHAConfig, agentConn *grpc.ClientConn, ddiConn *grpc.ClientConn) error {
+func Run(conf *config.PGHAConfig, agentConn *grpc.ClientConn) error {
 	s := &RPCServer{
-		pgHandler:  pg.NewPGHandler(conf, agentConn),
-		ddiHandler: ddi.NewDDIHandler(conf, ddiConn),
-		eventChan:  make(chan string, 10),
+		pgHandler: pg.NewPGHandler(conf, agentConn),
+		eventChan: make(chan string, 10),
 	}
 
 	s.fsm = fsm.NewFSM(
@@ -306,11 +303,6 @@ func (s *RPCServer) turnToTmpMaster(e *fsm.Event) {
 		log.Errorf("start tmp master failed: %s", err.Error())
 		panic(err)
 	}
-
-	if err := s.ddiHandler.MasterDown(); err != nil {
-		log.Errorf("send master down to ddi failed: %s", err.Error())
-		panic(err)
-	}
 }
 
 func (s *RPCServer) turnBackToSlave(e *fsm.Event) {
@@ -341,11 +333,6 @@ func (s *RPCServer) turnBackToSlave(e *fsm.Event) {
 	if err := s.pgHandler.StartSlave(len(s.queryDestState()) == 0); err != nil {
 		log.Errorf("start slave failed: %s", err.Error())
 		return
-	}
-
-	if err := s.ddiHandler.MasterUp(); err != nil {
-		log.Errorf("send master up to ddi failed: %s", err.Error())
-		panic(err)
 	}
 }
 
