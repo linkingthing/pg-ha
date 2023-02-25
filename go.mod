@@ -9,6 +9,6 @@ require (
 	github.com/linkingthing/pg-agent v0.0.0-20200707073748-492894b04f48
 	github.com/looplab/fsm v0.1.0
 	github.com/zdnscloud/cement v0.0.0-20200612070849-67372f989797
-	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
+	golang.org/x/net v0.7.0
 	google.golang.org/grpc v1.29.1
 )
